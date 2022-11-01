@@ -7,8 +7,8 @@ from sklearn.cluster import KMeans
 import numpy as np
 from sklearn.decomposition import PCA
 
-CLUSTERS = input('input num of clusters ->')
-COMPONENTS = input('input num of components ->')
+CLUSTERS = int(input('input num of clusters ->'))
+COMPONENTS = int(input('input num of components ->'))
 OUTPUT_DIR = "../result/k-means/test"
  
 # 画像をnumpy配列で読み込み、変形
@@ -16,7 +16,7 @@ impathlist = glob("../convert-jpg/*")
 features = np.array([cv2.resize(cv2.imread(p), (64, 64), cv2.INTER_CUBIC) for p in impathlist])
 features = features.reshape(features.shape[0], -1)
 
-pca = PCA(n_components=COMPONENTS)
+pca = PCA(n_components=22)
 components = pca.fit_transform(features)
 print("PCA累積寄与率: {}".format(sum(pca.explained_variance_ratio_)))
  
