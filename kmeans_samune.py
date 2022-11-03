@@ -33,5 +33,3 @@ for i in range(model.n_clusters):
 # 結果をクラスタごとにディレクトリに保存
 for label, p in zip(model.labels_, impathlist):
     shutil.copyfile(p, OUTPUT_DIR + '{}/cluster{}/{}'.format(CLUSTERS, label, p.split('\\')[-1]))
-
-# memo
