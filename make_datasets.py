@@ -10,14 +10,13 @@ from random import randint
 
 INPUTDIR_PATH = "../datasets/convert_jpg/sets/set"
 OUTPUTDIR_PATH = "../datasets/choice_jpg{}/set{}"
-SETS_NUMBER = 10
+SETS_NUMBER = 11
 GET_NUMBER = int(input('how many photos chice? ->'))
 
 def set_labels():
     labels = []
     for i in range(SETS_NUMBER):
-        for j in range(GET_NUMBER):
-            labels.append(i)
+        labels.append(i)
     return labels
 
 def make_dir():
@@ -32,10 +31,11 @@ def make_dir():
 def copy_imgaes(labels):
     for i in range(SETS_NUMBER):
         inpath_list = glob(INPUTDIR_PATH + "{}/*".format(i))
-        for label in (labels):
+        count = 0
+        for j in range(GET_NUMBER):
             limit = len(inpath_list) - 1
             target = inpath_list.pop(randint(0, limit))
-            shutil.copyfile(target, OUTPUTDIR_PATH.format(GET_NUMBER, label) + "/{}".format(target.split("\\")[-1]))
+            shutil.copyfile(target, OUTPUTDIR_PATH.format(GET_NUMBER, labels[i]) + "/{}".format(target.split("\\")[-1]))
     return
 
 label = set_labels()
