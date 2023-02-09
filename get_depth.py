@@ -6,11 +6,14 @@ import cv2
 # カメラの設定
 conf = rs.config()
 # RGB
-# conf.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+conf.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
 # 距離
-# conf.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+conf.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+
+"""
 conf.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 6)
 conf.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 6)
+"""
 
 # conf.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
 
@@ -37,13 +40,15 @@ align = rs.align(align_to)
 
 cnt = 0
 
-key_count = 0
-DIR_PATH = '../datasets/caputers'
+key_count = 110
+DIR_PATH = '../datasets/captuers'
 BASE_NAME = 'command_capture'
 
 # stream開始
 pipe = rs.pipeline()
 profile = pipe.start(conf)
+
+colorizer = rs.colorizer()
 
 def capture(dir_path, basename, color_image, depth_image, key_count, ext='jpg'):
     os.makedirs(dir_path, exist_ok=True)
@@ -52,7 +57,15 @@ def capture(dir_path, basename, color_image, depth_image, key_count, ext='jpg'):
     cv2.imwrite('{}_color_{}.{}'.format(base_path, key_count, ext), color_image)
     cv2.imwrite('{}_depth_{}.{}'.format(base_path, key_count, ext), depth_image)
 
+def create_ply(key_count, colorized):
+    ply = rs.save_to_ply(DIR_PATH + '/ply/{}_{}.ply'.format(BASE_NAME,key_count))
+    ply.set_option(rs.save_to_ply.option_ply_binary, False)
+    ply.set_option(rs.save_to_ply.option_ply_normals, True)
+    ply.process(colorized)
+
+
 def affin(dir_path, basename, color_image, key_count, ext='jpg'):
+    os.makedirs(dir_path, exist_ok=True)
     basepath = os.path.join(dir_path, basename)
     img = color_image
     # 画像サイズ
@@ -70,10 +83,10 @@ def affin(dir_path, basename, color_image, key_count, ext='jpg'):
     cv2.imwrite('{}_affin_{}.{}'.format(basepath, key_count, ext), perspective_img)
 try:
     while True:
-        # frames = pipe.wait_for_frames()
 
         # frame処理で合わせる
         frames = pipe.wait_for_frames()
+        colorized = colorizer.process(frames)
         aligned_frames = align.process(frames)
         depth_frame =  aligned_frames.get_depth_frame()
         color_frame =  aligned_frames.get_color_frame()
@@ -112,11 +125,13 @@ try:
         #お好みの画像保存処理
         if key == ord('c'):
             key_count += 1
-            capture(DIR_PATH, BASE_NAME, color_image, depth_color_frame, key_count)
-            affin(DIR_PATH, BASE_NAME, color_image, key_count)
+            capture(DIR_PATH + '/original', BASE_NAME, color_image, depth_color_frame, key_count)
+            create_ply(key_count, colorized)
+            # affin(DIR_PATH + '/affin', BASE_NAME, color_image, key_count)
+            cv2.destroyWindow('RealSense')
         elif key == ord('q'):
+            cv2.destroyWindow('RealSense')
             break
 
 finally:
-    # cv2.destroyWindow('RealSense')
     pipe.stop()
